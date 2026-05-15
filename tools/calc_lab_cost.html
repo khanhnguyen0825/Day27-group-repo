@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Conversation Cost Lab Calculator</title>
+  <style>
+    :root {
+      --bg: #f4efe6;
+      --panel: #fffaf2;
+      --ink: #1f1b16;
+      --muted: #6b6257;
+      --line: #d7cabb;
+      --accent: #1c6b52;
+      --accent-2: #bf5a36;
+      --shadow: 0 14px 38px rgba(31, 27, 22, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(28, 107, 82, 0.16), transparent 28%),
+        radial-gradient(circle at top right, rgba(191, 90, 54, 0.14), transparent 24%),
+        linear-gradient(180deg, #f8f2e8 0%, var(--bg) 100%);
+    }
+
+    .shell {
+      width: min(1180px, calc(100vw - 32px));
+      margin: 32px auto 48px;
+    }
+
+    .hero,
+    .panel {
+      background: color-mix(in srgb, var(--panel) 92%, white 8%);
+      border: 1px solid rgba(215, 202, 187, 0.9);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .hero {
+      padding: 28px;
+      margin-bottom: 22px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: auto -30px -50px auto;
+      width: 220px;
+      height: 220px;
+      background: radial-gradient(circle, rgba(28, 107, 82, 0.16), transparent 65%);
+      pointer-events: none;
+    }
+
+    h1, h2, h3 {
+      margin: 0;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+    }
+
+    h1 {
+      font-size: clamp(2rem, 3vw, 3.3rem);
+      margin-bottom: 10px;
+    }
+
+    p {
+      margin: 0;
+      line-height: 1.6;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 22px;
+      align-items: start;
+    }
+
+    .panel {
+      padding: 22px;
+    }
+
+    .controls {
+      position: sticky;
+      top: 16px;
+    }
+
+    .section-title {
+      font-size: 0.86rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--accent);
+      margin-bottom: 14px;
+    }
+
+    .control-group + .control-group {
+      margin-top: 18px;
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
+    }
+
+    label {
+      display: block;
+      font-size: 0.95rem;
+      margin-bottom: 8px;
+      color: var(--ink);
+    }
+
+    input[type="number"] {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: #fff;
+      font: inherit;
+      color: var(--ink);
+    }
+
+    .checkboxes {
+      display: grid;
+      gap: 10px;
+    }
+
+    .checkbox {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      padding: 12px 14px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.74);
+    }
+
+    .checkbox input {
+      margin-top: 3px;
+    }
+
+    .checkbox strong {
+      display: block;
+      font-size: 0.98rem;
+      margin-bottom: 2px;
+    }
+
+    .button-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    button {
+      appearance: none;
+      border: none;
+      border-radius: 999px;
+      padding: 12px 18px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 140ms ease, opacity 140ms ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+    }
+
+    .primary {
+      background: var(--accent);
+      color: #f8f2e8;
+    }
+
+    .secondary {
+      background: #efe3d3;
+      color: var(--ink);
+    }
+
+    .results-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .card {
+      padding: 16px;
+      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.98), rgba(245,237,226,0.95));
+      border: 1px solid var(--line);
+    }
+
+    .card .label {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .card .value {
+      font-size: 1.55rem;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(255,255,255,0.75);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 780px;
+    }
+
+    th, td {
+      padding: 13px 14px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: rgba(28, 107, 82, 0.08);
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    .intent-blocks {
+      margin-top: 22px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .intent-block {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 16px;
+      background: rgba(255,255,255,0.7);
+    }
+
+    .intent-block h3 {
+      font-size: 1.05rem;
+      margin-bottom: 10px;
+    }
+
+    .intent-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .intent-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      border-bottom: 1px dashed rgba(215, 202, 187, 0.9);
+      padding-bottom: 8px;
+    }
+
+    .intent-row:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 999px;
+      padding: 7px 11px;
+      background: rgba(191, 90, 54, 0.1);
+      color: var(--accent-2);
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+
+    .footer-note {
+      margin-top: 18px;
+      font-size: 0.95rem;
+    }
+
+    @media (max-width: 920px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .controls {
+        position: static;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <section class="hero">
+      <div class="section-title">Day 27 Lab Tool</div>
+      <h1>AI Conversation Cost Calculator</h1>
+      <p class="muted">
+        Static HTML calculator for the travel-agency chatbot lab. It uses the same core assumptions as
+        <code>tools/calc_lab_cost.py</code> and lets you compare the preset configs in a presentation-friendly view.
+      </p>
+    </section>
+
+    <div class="grid">
+      <aside class="panel controls">
+        <div class="section-title">Controls</div>
+
+        <div class="control-group">
+          <label for="webCost">Web Search API Cost Per Call ($)</label>
+          <input id="webCost" type="number" min="0" step="0.001" value="0.005">
+        </div>
+
+        <div class="control-group">
+          <label>Select Configs</label>
+          <div class="checkboxes" id="configList"></div>
+        </div>
+
+        <div class="control-group">
+          <div class="pill" id="selectionNote">3 configs selected</div>
+          <p class="muted footer-note">
+            Booking and Complaint are treated as handoff flows, so they only incur classifier cost when a config uses an LLM classifier.
+          </p>
+        </div>
+
+        <div class="button-row">
+          <button class="primary" id="recalcBtn">Recalculate</button>
+          <button class="secondary" id="resetBtn">Reset</button>
+        </div>
+      </aside>
+
+      <main class="panel">
+        <div class="results-top">
+          <div>
+            <div class="section-title">Summary</div>
+            <h2>Scenario Comparison</h2>
+          </div>
+          <div class="pill" id="humanBaseline">Human baseline: $0.50 / conversation</div>
+        </div>
+
+        <div class="cards" id="summaryCards"></div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Config</th>
+                <th>Scenario</th>
+                <th>Avg Cost / Conv</th>
+                <th>Monthly Cost</th>
+                <th>Human Monthly</th>
+                <th>Cheaper Than Human</th>
+                <th>Savings %</th>
+              </tr>
+            </thead>
+            <tbody id="resultsBody"></tbody>
+          </table>
+        </div>
+
+        <div class="intent-blocks" id="detailBlocks"></div>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    const BOOKING = "Booking";
+    const COMPLAINT = "Complaint";
+    const GUIDE = "Guide";
+    const VISA = "Visa";
+    const WEATHER = "Weather";
+    const ALL_INTENTS = [GUIDE, VISA, WEATHER, BOOKING, COMPLAINT];
+
+    const MODELS = {
+      "gpt-4o-mini": { name: "GPT-4o-mini", input: 0.15, output: 0.60 },
+      "gemini-flash": { name: "Gemini 2.5 Flash", input: 0.30, output: 2.50 },
+      "deepseek-v4-pro": { name: "DeepSeek V4 Pro", input: 1.74, output: 3.48 },
+      "claude-haiku-4.5": { name: "Claude Haiku 4.5", input: 1.00, output: 5.00 },
+      "gpt-5.5": { name: "GPT-5.5", input: 5.00, output: 30.00 }
+    };
+
+    const PRESET_CONFIGS = {
+      "budget-bot": {
+        key: "budget-bot",
+        name: "Budget Bot",
+        responseModels: { default: "gpt-4o-mini" },
+        classifier: { kind: "keyword" },
+        history: { kind: "last_n", turns: 3 },
+        webMode: "off",
+        webIntents: [],
+        webTurnsByIntent: {}
+      },
+      "premium-concierge": {
+        key: "premium-concierge",
+        name: "Premium Concierge",
+        responseModels: { default: "gpt-5.5" },
+        classifier: { kind: "llm", model: "claude-haiku-4.5", inputTokens: 150, outputTokens: 20 },
+        history: { kind: "full" },
+        webMode: "broad",
+        webIntents: [],
+        webTurnsByIntent: {}
+      },
+      "smart-mix": {
+        key: "smart-mix",
+        name: "Smart Mix",
+        responseModels: {
+          Guide: "gemini-flash",
+          Weather: "gemini-flash",
+          Visa: "deepseek-v4-pro"
+        },
+        classifier: { kind: "keyword" },
+        history: { kind: "last_n", turns: 5 },
+        webMode: "selective",
+        webIntents: ["Visa", "Weather"],
+        webTurnsByIntent: {
+          Visa: [1, 2],
+          Weather: [1]
+        }
+      }
+    };
+
+    const SCENARIOS = {
+      A: {
+        name: "Scenario A",
+        turns: 4,
+        convPerDay: 300,
+        daysPerMonth: 30,
+        intentMix: { Guide: 0.50, Visa: 0.25, Weather: 0.10, Booking: 0.10, Complaint: 0.05 }
+      },
+      B: {
+        name: "Scenario B",
+        turns: 7,
+        convPerDay: 1200,
+        daysPerMonth: 30,
+        intentMix: { Guide: 0.30, Visa: 0.15, Weather: 0.10, Booking: 0.35, Complaint: 0.10 }
+      }
+    };
+
+    const CONSTANTS = {
+      systemPromptTokens: 500,
+      userMessageTokens: 80,
+      assistantResponseTokens: 180,
+      historyTurnTokens: 260,
+      ragTokens: 1250,
+      webSearchTokens: 800,
+      humanCostPerConversation: 0.50
+    };
+
+    function modelForIntent(config, intent) {
+      const key = config.responseModels[intent] || config.responseModels.default;
+      return MODELS[key];
+    }
+
+    function classifierCost(config) {
+      if (config.classifier.kind === "keyword") {
+        return 0;
+      }
+      const model = MODELS[config.classifier.model];
+      return modelCost(model, config.classifier.inputTokens, config.classifier.outputTokens);
+    }
+
+    function modelCost(model, inputTokens, outputTokens) {
+      return (inputTokens * model.input) / 1_000_000 + (outputTokens * model.output) / 1_000_000;
+    }
+
+    function historyTokens(config, turnNumber) {
+      const priorTurns = Math.max(turnNumber - 1, 0);
+      if (config.history.kind === "full") {
+        return priorTurns * CONSTANTS.historyTurnTokens;
+      }
+      if (config.history.kind === "last_n") {
+        return Math.min(priorTurns, config.history.turns) * CONSTANTS.historyTurnTokens;
+      }
+      return 0;
+    }
+
+    function webTurns(config, intent, totalTurns) {
+      if (config.webMode === "off") {
+        return [];
+      }
+      if (config.webMode === "broad") {
+        return Array.from({ length: totalTurns }, (_, i) => i + 1);
+      }
+      if (!config.webIntents.includes(intent)) {
+        return [];
+      }
+      return (config.webTurnsByIntent[intent] || []).filter((turn) => turn >= 1 && turn <= totalTurns);
+    }
+
+    function turnCost(config, intent, turnNumber, totalTurns, webCost) {
+      const model = modelForIntent(config, intent);
+      const withWeb = webTurns(config, intent, totalTurns).includes(turnNumber);
+      const inputTokens =
+        CONSTANTS.systemPromptTokens +
+        historyTokens(config, turnNumber) +
+        CONSTANTS.ragTokens +
+        CONSTANTS.userMessageTokens +
+        (withWeb ? CONSTANTS.webSearchTokens : 0);
+
+      let total = modelCost(model, inputTokens, CONSTANTS.assistantResponseTokens);
+      if (withWeb) {
+        total += webCost;
+      }
+      total += classifierCost(config);
+      return total;
+    }
+
+    function conversationCost(config, intent, scenario, webCost) {
+      if (intent === BOOKING || intent === COMPLAINT) {
+        return classifierCost(config);
+      }
+      let total = 0;
+      for (let turn = 1; turn <= scenario.turns; turn += 1) {
+        total += turnCost(config, intent, turn, scenario.turns, webCost);
+      }
+      return total;
+    }
+
+    function weightedAverageCost(config, scenario, webCost) {
+      return Object.entries(scenario.intentMix).reduce((sum, [intent, weight]) => {
+        return sum + weight * conversationCost(config, intent, scenario, webCost);
+      }, 0);
+    }
+
+    function monthlyCost(avgCost, scenario) {
+      return avgCost * scenario.convPerDay * scenario.daysPerMonth;
+    }
+
+    function humanMonthly(scenario) {
+      return CONSTANTS.humanCostPerConversation * scenario.convPerDay * scenario.daysPerMonth;
+    }
+
+    function savingsPct(aiMonthly, human) {
+      return ((human - aiMonthly) / human) * 100;
+    }
+
+    function cheaperThanHumanX(aiMonthly, human) {
+      return human / aiMonthly;
+    }
+
+    function formatMoney(value, digits = 2) {
+      return `$${value.toLocaleString(undefined, {
+        minimumFractionDigits: digits,
+        maximumFractionDigits: digits
+      })}`;
+    }
+
+    function formatTimes(value) {
+      return `${value.toFixed(2)}x`;
+    }
+
+    function selectedConfigs() {
+      return Array.from(document.querySelectorAll("[data-config-key]"))
+        .filter((node) => node.checked)
+        .map((node) => PRESET_CONFIGS[node.dataset.configKey]);
+    }
+
+    function renderConfigList() {
+      const list = document.getElementById("configList");
+      list.innerHTML = Object.values(PRESET_CONFIGS).map((config) => `
+        <label class="checkbox">
+          <input type="checkbox" data-config-key="${config.key}" checked>
+          <span>
+            <strong>${config.name}</strong>
+            <span class="muted">${describeConfig(config)}</span>
+          </span>
+        </label>
+      `).join("");
+    }
+
+    function describeConfig(config) {
+      if (config.key === "budget-bot") {
+        return "cheap model, no web, short history";
+      }
+      if (config.key === "premium-concierge") {
+        return "premium model, web broad, full history";
+      }
+      return "mixed model, selective web, last 5 turns";
+    }
+
+    function computeRows(configs, webCost) {
+      const rows = [];
+      for (const config of configs) {
+        for (const scenario of Object.values(SCENARIOS)) {
+          const avg = weightedAverageCost(config, scenario, webCost);
+          const monthly = monthlyCost(avg, scenario);
+          const human = humanMonthly(scenario);
+          rows.push({
+            config,
+            scenario,
+            avg,
+            monthly,
+            human,
+            cheaper: cheaperThanHumanX(monthly, human),
+            savings: savingsPct(monthly, human)
+          });
+        }
+      }
+      return rows;
+    }
+
+    function renderSummary(rows) {
+      const cards = document.getElementById("summaryCards");
+      if (!rows.length) {
+        cards.innerHTML = "";
+        return;
+      }
+      const cheapest = rows.reduce((best, row) => row.monthly < best.monthly ? row : best, rows[0]);
+      const priciest = rows.reduce((best, row) => row.monthly > best.monthly ? row : best, rows[0]);
+      const bestSavings = rows.reduce((best, row) => row.savings > best.savings ? row : best, rows[0]);
+      cards.innerHTML = `
+        <div class="card">
+          <div class="label">Cheapest Monthly</div>
+          <div class="value">${formatMoney(cheapest.monthly)}</div>
+          <p class="muted">${cheapest.config.name} · ${cheapest.scenario.name}</p>
+        </div>
+        <div class="card">
+          <div class="label">Most Expensive</div>
+          <div class="value">${formatMoney(priciest.monthly)}</div>
+          <p class="muted">${priciest.config.name} · ${priciest.scenario.name}</p>
+        </div>
+        <div class="card">
+          <div class="label">Best Savings</div>
+          <div class="value">${bestSavings.savings.toFixed(2)}%</div>
+          <p class="muted">${bestSavings.config.name} · ${bestSavings.scenario.name}</p>
+        </div>
+      `;
+    }
+
+    function renderTable(rows) {
+      const body = document.getElementById("resultsBody");
+      body.innerHTML = rows.map((row) => `
+        <tr>
+          <td><strong>${row.config.name}</strong></td>
+          <td>${row.scenario.name}</td>
+          <td>${formatMoney(row.avg, 5)}</td>
+          <td>${formatMoney(row.monthly)}</td>
+          <td>${formatMoney(row.human)}</td>
+          <td>${formatTimes(row.cheaper)}</td>
+          <td>${row.savings.toFixed(2)}%</td>
+        </tr>
+      `).join("");
+    }
+
+    function renderDetails(configs, webCost) {
+      const blocks = document.getElementById("detailBlocks");
+      blocks.innerHTML = configs.map((config) => {
+        const scenarioMarkup = Object.values(SCENARIOS).map((scenario) => {
+          const intentMarkup = ALL_INTENTS.map((intent) => {
+            const cost = conversationCost(config, intent, scenario, webCost);
+            return `
+              <div class="intent-row">
+                <span>${intent}</span>
+                <strong>${formatMoney(cost, 5)}</strong>
+              </div>
+            `;
+          }).join("");
+
+          const avg = weightedAverageCost(config, scenario, webCost);
+          const monthly = monthlyCost(avg, scenario);
+          return `
+            <div style="margin-top: 14px;">
+              <div class="pill">${scenario.name}</div>
+              <div class="intent-list" style="margin-top: 12px;">
+                ${intentMarkup}
+                <div class="intent-row">
+                  <span>Weighted average</span>
+                  <strong>${formatMoney(avg, 5)}</strong>
+                </div>
+                <div class="intent-row">
+                  <span>Monthly AI cost</span>
+                  <strong>${formatMoney(monthly)}</strong>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join("");
+
+        return `
+          <section class="intent-block">
+            <h3>${config.name}</h3>
+            <p class="muted">${describeConfig(config)}</p>
+            ${scenarioMarkup}
+          </section>
+        `;
+      }).join("");
+    }
+
+    function recalc() {
+      const configs = selectedConfigs();
+      const webCost = Number(document.getElementById("webCost").value) || 0.005;
+      document.getElementById("selectionNote").textContent = `${configs.length} config${configs.length === 1 ? "" : "s"} selected`;
+      const rows = computeRows(configs, webCost);
+      renderSummary(rows);
+      renderTable(rows);
+      renderDetails(configs, webCost);
+    }
+
+    function reset() {
+      document.getElementById("webCost").value = "0.005";
+      document.querySelectorAll("[data-config-key]").forEach((node) => {
+        node.checked = true;
+      });
+      recalc();
+    }
+
+    renderConfigList();
+    document.getElementById("recalcBtn").addEventListener("click", recalc);
+    document.getElementById("resetBtn").addEventListener("click", reset);
+    document.getElementById("configList").addEventListener("change", recalc);
+    document.getElementById("webCost").addEventListener("input", recalc);
+    recalc();
+  </script>
+</body>
+</html>
