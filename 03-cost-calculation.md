@@ -8,7 +8,9 @@
 
 ## Cách làm
 
-Nhóm dùng các giả định cố định của đề bài và tính cho 3 config đã chọn:
+Nhóm dùng các giả định cố định của đề bài và kiểm tra lại bằng tool `tools/calc_lab_cost.py`.
+
+Các config được tính:
 
 - `Budget Bot`
 - `Premium Concierge`
@@ -33,16 +35,16 @@ Nhóm dùng các giả định cố định của đề bài và tính cho 3 con
 
 | Item | Scenario A (4 turns) | Scenario B (7 turns) |
 |---|---|---|
-| Cost / conversation (avg) | $0.00143 | $0.00175 |
-| Monthly cost | $12.90 | $63.05 |
+| Cost / conversation (avg) | $0.00150 | $0.00179 |
+| Monthly cost | $13.49 | $64.60 |
 | Human baseline | $4,500 | $18,000 |
-| **Rẻ hơn human ___×** | 348.84× | 285.47× |
-| **Savings %** | 99.71% | 99.65% |
+| **Rẻ hơn human ___×** | 333.47× | 278.65× |
+| **Savings %** | 99.70% | 99.64% |
 
 **Sanity check**:
 
 ```text
-Số này rất rẻ nhưng vẫn hợp lý vì config này dùng GPT-4o-mini, không web search, không LLM classifier và Booking/Complaint được handoff nên 15%-45% conversations gần như không tốn generation cost.
+Số này rất rẻ nhưng vẫn hợp lý vì config này dùng GPT-4o-mini, không web search, không LLM classifier và Booking/Complaint được handoff nên một phần đáng kể volume gần như không tốn generation cost.
 ```
 
 ---
@@ -68,15 +70,15 @@ Config này đắt nhất là hợp lý vì dùng GPT-5.5 cho response, Claude H
 
 | Item | Scenario A | Scenario B |
 |---|---|---|
-| Cost / conversation (avg) | $0.01566 | $0.01916 |
-| Monthly cost | $140.90 | $689.73 |
-| **Rẻ hơn human ___×** | 31.94× | 26.10× |
-| **Savings %** | 96.87% | 96.17% |
+| Cost / conversation (avg) | $0.01089 | $0.01122 |
+| Monthly cost | $97.99 | $403.96 |
+| **Rẻ hơn human ___×** | 45.92× | 44.56× |
+| **Savings %** | 97.82% | 97.76% |
 
 **Sanity check**:
 
 ```text
-Config này có cost cao hơn Budget Bot nhưng thấp hơn rất nhiều so với Premium. Điều này hợp logic vì nhóm chỉ bật web search cho Visa và Weather, và chỉ dùng model mạnh hơn cho Visa thay vì cho toàn bộ flow.
+Config này cao hơn Budget Bot nhưng thấp hơn rất nhiều so với Premium. Điều này hợp logic vì nhóm chỉ bật web search có chọn lọc và chỉ dùng model mạnh hơn cho Visa thay vì cho toàn bộ flow.
 ```
 
 ---
@@ -113,12 +115,12 @@ Classifier: keyword = $0
 Web: OFF
 History: Last 3
 
-Guide/Visa/Weather 4 turns = $0.001686 / conv
-Guide/Visa/Weather 7 turns = $0.0031845 / conv
+Guide/Visa/Weather 4 turns = $0.00176 / conv
+Guide/Visa/Weather 7 turns = $0.00326 / conv
 Booking/Complaint = $0
 
-avg_cost_A = 50%×0.001686 + 25%×0.001686 + 10%×0.001686 = $0.0014331
-avg_cost_B = 30%×0.0031845 + 15%×0.0031845 + 10%×0.0031845 = $0.001751475
+avg_cost_A = 85% × 0.00176 = $0.00150
+avg_cost_B = 55% × 0.00326 = $0.00179
 ```
 
 ### Premium Concierge
@@ -129,12 +131,12 @@ Classifier: Claude Haiku 4.5 = ~$0.00025 / message
 Web: ON broad
 History: Full
 
-Guide/Visa/Weather 4 turns = $0.1030 / conv
-Guide/Visa/Weather 7 turns = $0.1939 / conv
+Guide/Visa/Weather 4 turns = $0.10300 / conv
+Guide/Visa/Weather 7 turns = $0.19390 / conv
 Booking/Complaint = classifier only = $0.00025
 
-avg_cost_A = 85%×0.1030 + 15%×0.00025 = $0.0875875
-avg_cost_B = 55%×0.1939 + 45%×0.00025 = $0.1067575
+avg_cost_A = 85% × 0.10300 + 15% × 0.00025 = $0.08759
+avg_cost_B = 55% × 0.19390 + 45% × 0.00025 = $0.10676
 ```
 
 ### Smart Mix
@@ -147,16 +149,16 @@ Classifier: keyword = $0
 Web: ON selective cho Visa + Weather
 History: Last 5
 
-Guide 4 turns = $0.004464
-Guide 7 turns = $0.008553
-Visa 4 turns = $0.0435248
-Visa 7 turns = $0.0804662
-Weather 4 turns = $0.025424
-Weather 7 turns = $0.045233
+Guide 4 turns = $0.00446
+Guide 7 turns = $0.00855
+Visa 4 turns = $0.03074
+Visa 7 turns = $0.04851
+Weather 4 turns = $0.00970
+Weather 7 turns = $0.01379
 Booking/Complaint = $0
 
-avg_cost_A = 50%×0.004464 + 25%×0.0435248 + 10%×0.025424 = $0.0156556
-avg_cost_B = 30%×0.008553 + 15%×0.0804662 + 10%×0.045233 = $0.01915913
+avg_cost_A = 50%×0.00446 + 25%×0.03074 + 10%×0.00970 = $0.01089
+avg_cost_B = 30%×0.00855 + 15%×0.04851 + 10%×0.01379 = $0.01122
 ```
 
 ---
